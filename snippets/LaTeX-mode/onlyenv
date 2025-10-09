@@ -1,0 +1,7 @@
+# -*- mode: snippet -*-
+# name: onlyenv
+# key: oenv
+# --
+\begin{onlyenv}<${1:+}>%
+$0
+\end{onlyenv}%
