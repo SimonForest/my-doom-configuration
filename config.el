@@ -84,8 +84,17 @@
 ;;   (map! :nv "s" 'evil-previous-line)
 ;;   )
 
+(setq doom-leader-alt-key "C-SPC")
 (setq doom-localleader-key ",")
 (setq doom-localleader-alt-key "C-,")
+(setq TeX-shell "/bin/bash")
+
+;; key-chord
+(key-chord-mode t)
+(key-chord-define evil-insert-state-map "éé" (kbd "$"))
+(after! latex
+  (key-chord-define evil-insert-state-map "éé" (kbd "$"))
+  )
 
 ; https://discourse.doomemacs.org/t/auctex-and-latex-mode/4901
 ; SF: problème avec doom + emacs < 30. Il se corrige avec la ligne suivante:
@@ -95,17 +104,23 @@
 (map! :after org :localleader :map org-mode-map "i" nil)
 (map! :after org :localleader :map org-mode-map "it" #'org-insert-structure-template)
 
-; LATEX-mode
+; LATEX mode
+; SF: TODO: trouver une solution plus compatible avec les smarttabs
+; qui sont définis ici: ~/.config/emacs/modules/config/default/+evil-bindings.el
+(map! :after latex :map LaTeX-mode-map :nv "<tab>" 'indent-for-tab-command)
 (defun my-insert-bbreak ()
   (interactive)
+  (LaTeX-indent-line)
   (insert TeX-esc "bigbreak\n")
   )
 (defun my-insert-mbreak ()
   (interactive)
+  (LaTeX-indent-line)
   (insert TeX-esc "medbreak\n")
   )
 (defun my-insert-sbreak ()
   (interactive)
+  (LaTeX-indent-line)
   (insert TeX-esc "smallbreak\n")
   )
 (map! :after latex :localleader :map LaTeX-mode-map "," '+latex/compile)
@@ -129,11 +144,25 @@
   )
 
 (map! :leader :nv "ie" 'find-file)
-(map! :leader :n "ii" '+vertico/switch-workspace-buffer)
 (map! :n "}" 'save-buffer)
+
+;; Helm
+(map! :after helm :map helm-map "C-h" nil)
+(map! :after helm :map helm-map "C-p" 'evil-paste-from-register)
+(map! :after helm :map helm-find-files-map "C-s" nil)
+(map! :after helm :map helm-find-files-map "C-c C-s" 'helm-ff-run-grep)
+(map! :after helm :map helm-buffer-map "C-s" nil)
+(map! :after helm :map helm-buffer-map "C-c C-s" 'helm-run-occur-grep-ag-buffer-directory)
+(map! :after helm :map helm-read-file-map "C-h" 'helm-find-files-up-one-level)
+(map! :leader :nv "ii" 'helm-buffers-list)
+(map! :after helm :leader :nv "rs" 'helm-resume)
+(map! :after helm :leader :nv "sf" '+default/search-other-cwd)
+(map! :after helm :leader :nv "sl" 'helm-find)
+(map! :after helm :leader "tt" '+vterm/toggle)
 
 (map! :after vertico :map vertico-map "C-t" 'vertico-next)
 (map! :after vertico :map vertico-map "C-s" 'vertico-previous)
+;(map! :leader :n "ii" '+vertico/switch-workspace-buffer)
 (map! :after vertico :leader :nv "rr" 'vertico-repeat)
 
 (map! :after evil :nv "h" 'evil-replace)
@@ -224,3 +253,15 @@
                               (funcall-interactively #'corfu-next (- corfu-count))))
                 "C-d" (cmd! (let (corfu-cycle)
                               (funcall-interactively #'corfu-next corfu-count)))))))
+
+;; Python
+;; SF: there should be a simpler configuration for this:
+(after! python
+  (add-hook 'python-mode-hook (defun my-set-evil-shift-width-python ()
+                                (setq-local tab-width 4)
+                                (setq-local evil-shift-width 4)
+                                ))
+  )
+
+;; LanguageTool
+(setq langtool-language-tool-jar "/home/simon/packages/languagetool-6.6/languagetool-commandline.jar")
